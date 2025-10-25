@@ -3,18 +3,23 @@
     <name>NoaApp</name>
     <description>Assistant Noä IA Offline</description>
     <author email="you@example.com" href="https://example.com">Jérémy Lefebvre</author>
+
     <content src="index.html" />
+
     <preference name="SplashScreenDelay" value="0" />
     <preference name="Fullscreen" value="true" />
     <preference name="Orientation" value="portrait" />
     <preference name="AndroidLaunchMode" value="singleTop" />
     <preference name="android-minSdkVersion" value="24" />
-    <preference name="android-targetSdkVersion" value="33" />
+    <preference name="android-targetSdkVersion" value="34" />
+
     <access origin="*" />
     <allow-intent href="*" />
+
     <plugin name="cordova-plugin-android-permissions" />
     <plugin name="cordova-plugin-tts" />
     <plugin name="cordova-plugin-speechrecognition" />
+
     <platform name="android">
         <config-file target="AndroidManifest.xml" parent="/*">
             <uses-permission android:name="android.permission.RECORD_AUDIO" />
@@ -24,17 +29,12 @@
             <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
             <uses-permission android:name="android.permission.WAKE_LOCK" />
         </config-file>
+
         <config-file target="AndroidManifest.xml" parent="/manifest/application/activity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </config-file>
-        <icon density="ldpi" src="resources/android/icon/drawable-ldpi-icon.png" />
-        <icon density="mdpi" src="resources/android/icon/drawable-mdpi-icon.png" />
-        <icon density="hdpi" src="resources/android/icon/drawable-hdpi-icon.png" />
-        <icon density="xhdpi" src="resources/android/icon/drawable-xhdpi-icon.png" />
-        <icon density="xxhdpi" src="resources/android/icon/drawable-xxhdpi-icon.png" />
-        <icon density="xxxhdpi" src="resources/android/icon/drawable-xxxhdpi-icon.png" />
     </platform>
 </widget>
