@@ -1,355 +1,187 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-    <meta name="format-detection" content="telephone=no">
-    <title>NoaApp</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #fff;
-            height: 100vh;
-            overflow: hidden;
-        }
-        
-        #app {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-        }
-        
-        /* Header avec avatar */
-        #header {
-            padding: 20px;
-            text-align: center;
-            background: rgba(0,0,0,0.2);
-        }
-        
-        #avatar {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%);
-            margin: 0 auto 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 40px;
-            animation: pulse 2s ease-in-out infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-        
-        #status {
-            font-size: 12px;
-            opacity: 0.8;
-        }
-        
-        /* Zone de chat */
-        #chat-container {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .message {
-            margin-bottom: 15px;
-            display: flex;
-            animation: slideIn 0.3s ease-out;
-        }
-        
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .message.user {
-            justify-content: flex-end;
-        }
-        
-        .message-bubble {
-            max-width: 80%;
-            padding: 12px 16px;
-            border-radius: 18px;
-            word-wrap: break-word;
-        }
-        
-        .message.noa .message-bubble {
-            background: rgba(255,255,255,0.2);
-            backdrop-filter: blur(10px);
-        }
-        
-        .message.user .message-bubble {
-            background: rgba(255,255,255,0.95);
-            color: #333;
-        }
-        
-        /* Zone de saisie */
-        #input-area {
-            padding: 15px;
-            background: rgba(0,0,0,0.3);
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-        
-        #text-input {
-            flex: 1;
-            padding: 12px 16px;
-            border-radius: 25px;
-            border: none;
-            font-size: 16px;
-            background: rgba(255,255,255,0.9);
-            outline: none;
-        }
-        
-        .btn {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            border: none;
-            background: rgba(255,255,255,0.2);
-            color: #fff;
-            font-size: 20px;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .btn:active {
-            transform: scale(0.95);
-            background: rgba(255,255,255,0.3);
-        }
-        
-        .btn.listening {
-            background: #ff4757;
-            animation: recordPulse 1s ease-in-out infinite;
-        }
-        
-        @keyframes recordPulse {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(255,71,87,0.7); }
-            50% { box-shadow: 0 0 0 10px rgba(255,71,87,0); }
-        }
-        
-        /* Loader */
-        .typing-indicator {
-            display: none;
-            padding: 10px 16px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 18px;
-            width: fit-content;
-        }
-        
-        .typing-indicator.show {
-            display: block;
-        }
-        
-        .dot {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #fff;
-            margin: 0 2px;
-            animation: bounce 1.4s infinite ease-in-out;
-        }
-        
-        .dot:nth-child(2) { animation-delay: -0.32s; }
-        .dot:nth-child(3) { animation-delay: -0.16s; }
-        
-        @keyframes bounce {
-            0%, 80%, 100% { transform: scale(0); }
-            40% { transform: scale(1); }
-        }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Noä</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  color:#fff;background:#000 url('img/noa.jpg') center/cover no-repeat fixed;overflow:hidden
+}
+.overlay{position:fixed;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.25) 0%,rgba(34,0,51,.5) 50%,rgba(0,0,0,.65) 100%);pointer-events:none}
+.status{position:fixed;top:18px;left:18px;padding:8px 12px;border-radius:16px;background:rgba(0,0,0,.35);backdrop-filter:blur(6px);font-size:14px}
+.fab{position:fixed;top:14px;right:14px;display:flex;align-items:center;gap:8px;padding:8px 12px;border:0;border-radius:18px;background:rgba(0,0,0,.35);color:#fff;font-size:16px;cursor:pointer}
+.fab:active{transform:scale(.98)}
+.input-bar{position:fixed;left:0;right:0;bottom:16px;display:flex;gap:10px;padding:0 16px}
+.input{flex:1;border:0;border-radius:26px;padding:14px 16px;font-size:16px;background:rgba(255,255,255,.92);color:#222;outline:none}
+.btn{min-width:52px;height:52px;border:0;border-radius:50%;font-size:20px;color:#fff;cursor:pointer;background:rgba(255,255,255,.18);backdrop-filter:blur(8px)}
+.btn:active{transform:scale(.96)}
+.btn.primary{background:#3b82f6}
+.btn.listening{background:#ff4757;box-shadow:0 0 0 0 rgba(255,71,87,.7);animation:rec 1.2s infinite}
+@keyframes rec{50%{box-shadow:0 0 0 12px rgba(255,71,87,0)}}
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:rgba(0,0,0,.55);backdrop-filter:blur(6px);padding:10px 14px;border-radius:14px;font-size:14px;display:none}
+.toast.show{display:block}
+
+/* Panel */
+.panel-wrap{position:fixed;inset:0;background:rgba(0,0,0,.35);backdrop-filter:blur(2px);display:none}
+.panel{position:absolute;right:0;top:0;bottom:0;width:86%;max-width:380px;background:rgba(8,8,12,.92);color:#fff;padding:18px 16px 90px 16px;overflow:auto}
+.panel h2{font-size:18px;margin-bottom:8px}
+.row{margin:10px 0;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.row label{font-size:14px;opacity:.9}
+.row input[type="checkbox"]{transform:scale(1.2)}
+.row input[type="range"]{width:55%}
+.select{background:#0f172a;border:1px solid #243048;color:#fff;border-radius:10px;padding:8px 10px}
+.panel .btn-row{position:sticky;bottom:0;display:flex;gap:10px;background:linear-gradient(180deg,transparent,rgba(8,8,12,.92) 30%);padding-top:12px;padding-bottom:6px}
+.btn.full{flex:1;border-radius:12px;height:44px}
+.link{color:#93c5fd;font-size:13px;text-decoration:underline;background:none;border:0}
+.showPanel{display:block}
+</style>
 </head>
 <body>
-    <div id="app">
-        <div id="header">
-            <div id="avatar">🤖</div>
-            <h2>Noä</h2>
-            <div id="status">Prête à vous aider</div>
-        </div>
-        
-        <div id="chat-container">
-            <div class="message noa">
-                <div class="message-bubble">Bonjour ! Je suis Noä, votre assistante IA. Comment puis-je vous aider aujourd'hui ?</div>
-            </div>
-            <div class="typing-indicator">
-                <span class="dot"></span>
-                <span class="dot"></span>
-                <span class="dot"></span>
-            </div>
-        </div>
-        
-        <div id="input-area">
-            <input type="text" id="text-input" placeholder="Écrivez votre message...">
-            <button class="btn" id="mic-btn">🎤</button>
-            <button class="btn" id="send-btn">➤</button>
-        </div>
+<div class="overlay"></div>
+<div class="status" id="status">Noä • En ligne</div>
+<button id="openSettings" class="fab">⚙️ Paramètres</button>
+
+<div class="input-bar">
+  <input id="text-input" class="input" placeholder="Parle à Noä...">
+  <button id="mic-btn" class="btn">🎤</button>
+  <button id="send-btn" class="btn primary">Envoyer</button>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<div id="panelWrap" class="panel-wrap">
+  <div class="panel">
+    <h2>Paramètres</h2>
+
+    <div class="row">
+      <label for="lang">Langue</label>
+      <select id="lang" class="select">
+        <option value="fr-FR">Français (FR)</option>
+        <option value="en-US">English (US)</option>
+      </select>
     </div>
-    
-    <script type="text/javascript" src="cordova.js"></script>
-    <script type="text/javascript">
-        let isListening = false;
-        let chatHistory = [];
-        
-        function loadHistory() {
-            const saved = localStorage.getItem('noaHistory');
-            if (saved) {
-                chatHistory = JSON.parse(saved);
-                chatHistory.forEach(msg => {
-                    addMessageToUI(msg.text, msg.from);
-                });
-            }
-        }
-        
-        function saveHistory() {
-            localStorage.setItem('noaHistory', JSON.stringify(chatHistory));
-        }
-        
-        function addMessageToUI(text, from) {
-            const container = document.getElementById('chat-container');
-            const typingIndicator = document.querySelector('.typing-indicator');
-            
-            const msgDiv = document.createElement('div');
-            msgDiv.className = `message ${from}`;
-            
-            const bubble = document.createElement('div');
-            bubble.className = 'message-bubble';
-            bubble.textContent = text;
-            
-            msgDiv.appendChild(bubble);
-            container.insertBefore(msgDiv, typingIndicator);
-            container.scrollTop = container.scrollHeight;
-        }
-        
-        function sendMessage(text) {
-            if (!text.trim()) return;
-            addMessageToUI(text, 'user');
-            chatHistory.push({ text, from: 'user', time: Date.now() });
-            saveHistory();
-            const typingIndicator = document.querySelector('.typing-indicator');
-            typingIndicator.classList.add('show');
-            setTimeout(() => {
-                typingIndicator.classList.remove('show');
-                const response = generateResponse(text);
-                addMessageToUI(response, 'noa');
-                chatHistory.push({ text: response, from: 'noa', time: Date.now() });
-                saveHistory();
-                if (window.TTS) {
-                    TTS.speak({ text: response, locale: 'fr-FR', rate: 1.0 });
-                }
-            }, 1500);
-        }
-        
-        function generateResponse(input) {
-            const responses = {
-                'bonjour': 'Bonjour ! Comment allez-vous ?',
-                'comment vas-tu': 'Je vais bien, merci ! Et vous ?',
-                'qui es-tu': 'Je suis Noä, votre assistante IA personnelle.',
-                'merci': 'De rien, c\'est un plaisir de vous aider !',
-                'au revoir': 'Au revoir ! À bientôt !'
-            };
-            const lower = input.toLowerCase();
-            for (let key in responses) {
-                if (lower.includes(key)) return responses[key];
-            }
-            return 'Je comprends. Comment puis-je vous aider davantage ?';
-        }
-        
-        function startListening() {
-            if (!window.plugins || !window.plugins.speechRecognition) {
-                alert('Plugin reconnaissance vocale non disponible');
-                return;
-            }
-            const micBtn = document.getElementById('mic-btn');
-            if (isListening) {
-                window.plugins.speechRecognition.stopListening();
-                micBtn.classList.remove('listening');
-                isListening = false;
-                return;
-            }
-            window.plugins.speechRecognition.hasPermission(
-                (hasPermission) => {
-                    if (!hasPermission) {
-                        window.plugins.speechRecognition.requestPermission(
-                            () => listen(),
-                            () => alert('Permission micro refusée')
-                        );
-                    } else {
-                        listen();
-                    }
-                }
-            );
-            function listen() {
-                micBtn.classList.add('listening');
-                isListening = true;
-                window.plugins.speechRecognition.startListening(
-                    (results) => {
-                        micBtn.classList.remove('listening');
-                        isListening = false;
-                        if (results && results.length > 0) {
-                            document.getElementById('text-input').value = results[0];
-                            sendMessage(results[0]);
-                        }
-                    },
-                    (error) => {
-                        micBtn.classList.remove('listening');
-                        isListening = false;
-                        console.error('Erreur reconnaissance:', error);
-                    },
-                    { language: 'fr-FR', showPopup: false }
-                );
-            }
-        }
-        
-        document.addEventListener('deviceready', () => {
-            console.log('Cordova ready');
-            loadHistory();
-            if (cordova.plugins && cordova.plugins.permissions) {
-                const permissions = cordova.plugins.permissions;
-                permissions.requestPermissions(
-                    [
-                        permissions.RECORD_AUDIO,
-                        permissions.MODIFY_AUDIO_SETTINGS
-                    ],
-                    (status) => console.log('Permissions:', status),
-                    (error) => console.error('Permission error:', error)
-                );
-            }
-            document.getElementById('status').textContent = 'En ligne';
-        });
-        
-        document.getElementById('send-btn').addEventListener('click', () => {
-            const input = document.getElementById('text-input');
-            sendMessage(input.value);
-            input.value = '';
-        });
-        
-        document.getElementById('text-input').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                sendMessage(e.target.value);
-                e.target.value = '';
-            }
-        });
-        
-        document.getElementById('mic-btn').addEventListener('click', startListening);
-    </script>
+
+    <div class="row">
+      <label for="ttsEnable">Synthèse vocale</label>
+      <input id="ttsEnable" type="checkbox">
+    </div>
+
+    <div class="row">
+      <label for="rate">Vitesse voix</label>
+      <input id="rate" type="range" min="0.7" max="1.3" step="0.05">
+    </div>
+
+    <div class="row">
+      <label for="wake">Garder l’écran allumé</label>
+      <input id="wake" type="checkbox">
+    </div>
+
+    <div class="row" style="justify-content:flex-start">
+      <button id="clearHistory" class="link">Effacer l’historique</button>
+    </div>
+
+    <div class="btn-row">
+      <button id="closeSettings" class="btn full">Fermer</button>
+      <button id="saveSettings" class="btn primary full">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<script src="cordova.js"></script>
+<script>
+let isListening=false;
+let settings={lang:'fr-FR',tts:true,rate:1.0,wake:false};
+let wakeLockObj=null;
+
+function loadSettings(){
+  try{ const s=JSON.parse(localStorage.getItem('noaSettings')); if(s) settings=Object.assign(settings,s);}catch(e){}
+  document.getElementById('lang').value=settings.lang;
+  document.getElementById('ttsEnable').checked=settings.tts;
+  document.getElementById('rate').value=settings.rate;
+  document.getElementById('wake').checked=settings.wake;
+}
+function saveSettings(){
+  settings.lang=document.getElementById('lang').value;
+  settings.tts=document.getElementById('ttsEnable').checked;
+  settings.rate=parseFloat(document.getElementById('rate').value);
+  settings.wake=document.getElementById('wake').checked;
+  localStorage.setItem('noaSettings',JSON.stringify(settings));
+  applyWake(settings.wake);
+  toast('Paramètres enregistrés');
+}
+async function applyWake(on){
+  try{
+    if('wakeLock' in navigator){
+      if(on && !wakeLockObj){ wakeLockObj=await navigator.wakeLock.request('screen'); }
+      if(!on && wakeLockObj){ await wakeLockObj.release(); wakeLockObj=null; }
+      document.addEventListener('visibilitychange',async()=>{ if(document.visibilityState==='visible' && settings.wake){ try{ wakeLockObj=await navigator.wakeLock.request('screen'); }catch(_){}}});
+    }
+  }catch(_){}
+}
+function toast(msg){
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),1300);
+}
+function speak(text){
+  if(settings.tts && window.TTS){
+    TTS.speak({text,locale:settings.lang,rate:settings.rate});
+  }
+}
+function generateResponse(input){
+  const map={'bonjour':'Bonsoir ! Que puis-je faire pour toi ?','salut':'Salut !','qui es-tu':'Je suis Noä, ton assistante.','merci':'Avec plaisir !'};
+  const k=input.toLowerCase(); for(const key in map){ if(k.includes(key)) return map[key]; } return "Je t’écoute.";
+}
+function sendMessage(text){
+  if(!text||!text.trim()) return;
+  const res=generateResponse(text.trim());
+  localStorage.setItem('noaLast',JSON.stringify({q:text, a:res, t:Date.now()}));
+  toast(res); speak(res);
+}
+function startListening(){
+  if(!window.plugins||!window.plugins.speechRecognition){ toast('Micro indisponible'); return; }
+  const mic=document.getElementById('mic-btn');
+  if(isListening){ window.plugins.speechRecognition.stopListening(); mic.classList.remove('listening'); isListening=false; return; }
+  window.plugins.speechRecognition.hasPermission(ok=>{
+    if(!ok){
+      window.plugins.speechRecognition.requestPermission(()=>begin(),()=>toast('Permission refusée'));
+    }else begin();
+  });
+  function begin(){
+    isListening=true; mic.classList.add('listening');
+    window.plugins.speechRecognition.startListening((res)=>{
+      mic.classList.remove('listening'); isListening=false;
+      if(res&&res.length){ const v=res[0]; document.getElementById('text-input').value=v; sendMessage(v); }
+    },(_)=>{ mic.classList.remove('listening'); isListening=false; },{language:settings.lang,showPopup:false});
+  }
+}
+
+document.addEventListener('deviceready',()=>{
+  if(cordova.plugins&&cordova.plugins.permissions){
+    const p=cordova.plugins.permissions;
+    p.requestPermissions([p.RECORD_AUDIO,p.MODIFY_AUDIO_SETTINGS],()=>{},()=>{});
+  }
+  loadSettings();
+  applyWake(settings.wake);
+  document.getElementById('status').textContent='Noä • En ligne';
+});
+
+document.getElementById('send-btn').addEventListener('click',()=>{
+  const i=document.getElementById('text-input'); sendMessage(i.value); i.value='';
+});
+document.getElementById('text-input').addEventListener('keypress',(e)=>{
+  if(e.key==='Enter'){ sendMessage(e.target.value); e.target.value=''; }
+});
+document.getElementById('mic-btn').addEventListener('click',startListening);
+
+const panelWrap=document.getElementById('panelWrap');
+document.getElementById('openSettings').addEventListener('click',()=>{ loadSettings(); panelWrap.classList.add('showPanel'); });
+document.getElementById('closeSettings').addEventListener('click',()=>panelWrap.classList.remove('showPanel'));
+document.getElementById('saveSettings').addEventListener('click',()=>{ saveSettings(); panelWrap.classList.remove('showPanel'); });
+document.getElementById('clearHistory').addEventListener('click',()=>{ localStorage.removeItem('noaHistory'); localStorage.removeItem('noaLast'); toast('Historique effacé'); });
+panelWrap.addEventListener('click',(e)=>{ if(e.target===panelWrap) panelWrap.classList.remove('showPanel'); });
+</script>
 </body>
 </html>
