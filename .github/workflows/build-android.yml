@@ -1,41 +1,50 @@
-name: Android APK
+name: Build Android APK
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-
-      - uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - uses: android-actions/setup-android@v3
-        with:
-          log-accepted-android-sdk-licenses: true
-
-      - name: Build debug APK with Cordova
-        env:
-          GRADLE_OPTS: "-Dorg.gradle.daemon=false -Xmx2048m"
-        run: |
-          npm i -g cordova@12
-          cordova telemetry off || true
-          cordova platform rm android || true
-          cordova platform add android@13
-          cordova build android --debug --no-telemetry --no-update-notifier
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: NoaApp-debug
-          path: platforms/android/app/build/outputs/apk/debug/app-debug.apk
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+    
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+    
+    - name: Install Cordova
+      run: npm install -g cordova@12
+    
+    - name: Install dependencies
+      run: npm install
+    
+    - name: Add Android platform
+      run: cordova platform add android@13 || true
+    
+    - name: Build Android APK
+      run: cordova build android --verbose
+    
+    - name: Debug - List build outputs
+      if: always()
+      run: |
+        echo "=== Listing build directory ==="
+        ls -lR platforms/android/app/build/outputs/ || echo "Build outputs not found"
+    
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: NoaApp-debug
+        path: platforms/android/app/build/outputs/apk/debug/app-debug.apk
+        if-no-files-found: error

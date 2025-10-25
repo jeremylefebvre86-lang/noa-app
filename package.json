@@ -19,9 +19,7 @@
     "cordova-plugin-tts": "^0.2.3"
   },
   "cordova": {
-    "platforms": [
-      "android"
-    ],
+    "platforms": [],
     "plugins": {
       "cordova-plugin-android-permissions": {},
       "cordova-plugin-tts": {},

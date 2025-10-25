@@ -1,152 +1,355 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Noä v3.4 — Mémoire vivante</title>
-<style>
-body{margin:0;font-family:"Segoe UI",sans-serif;background:#0b0b0c;color:#fff;display:flex;flex-direction:column;height:100vh;overflow:hidden}
-#videoContainer{flex:1;position:relative;overflow:hidden;background:#000}
-video{width:100%;height:100%;object-fit:cover}
-#chat{position:absolute;bottom:0;width:100%;display:flex;align-items:center;gap:8px;padding:10px;background:rgba(0,0,0,.6)}
-#input{flex:1;padding:10px;border:none;border-radius:8px;background:rgba(255,255,255,.1);color:#fff}
-button{background:#2b7cff;border:none;color:#fff;border-radius:8px;padding:9px 14px}
-#menu{position:absolute;top:10px;right:10px;background:rgba(0,0,0,.7);padding:10px;border-radius:10px}
-#menuContent{display:none;margin-top:8px}
-textarea{width:100%;height:60px;background:rgba(255,255,255,.1);border:none;border-radius:6px;color:#fff;padding:5px}
-label{font-size:.9em}
-</style>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="format-detection" content="telephone=no">
+    <title>NoaApp</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        #app {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        
+        /* Header avec avatar */
+        #header {
+            padding: 20px;
+            text-align: center;
+            background: rgba(0,0,0,0.2);
+        }
+        
+        #avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #f093fb 0%, #f5576c 100%);
+            margin: 0 auto 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        #status {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        
+        /* Zone de chat */
+        #chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .message.user {
+            justify-content: flex-end;
+        }
+        
+        .message-bubble {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            word-wrap: break-word;
+        }
+        
+        .message.noa .message-bubble {
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+        }
+        
+        .message.user .message-bubble {
+            background: rgba(255,255,255,0.95);
+            color: #333;
+        }
+        
+        /* Zone de saisie */
+        #input-area {
+            padding: 15px;
+            background: rgba(0,0,0,0.3);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        #text-input {
+            flex: 1;
+            padding: 12px 16px;
+            border-radius: 25px;
+            border: none;
+            font-size: 16px;
+            background: rgba(255,255,255,0.9);
+            outline: none;
+        }
+        
+        .btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255,255,255,0.2);
+            color: #fff;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn:active {
+            transform: scale(0.95);
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .btn.listening {
+            background: #ff4757;
+            animation: recordPulse 1s ease-in-out infinite;
+        }
+        
+        @keyframes recordPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(255,71,87,0.7); }
+            50% { box-shadow: 0 0 0 10px rgba(255,71,87,0); }
+        }
+        
+        /* Loader */
+        .typing-indicator {
+            display: none;
+            padding: 10px 16px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 18px;
+            width: fit-content;
+        }
+        
+        .typing-indicator.show {
+            display: block;
+        }
+        
+        .dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #fff;
+            margin: 0 2px;
+            animation: bounce 1.4s infinite ease-in-out;
+        }
+        
+        .dot:nth-child(2) { animation-delay: -0.32s; }
+        .dot:nth-child(3) { animation-delay: -0.16s; }
+        
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+    </style>
 </head>
 <body>
-<div id="videoContainer">
-  <video id="noaVideo" autoplay loop muted playsinline>
-    <source src="assets/noa_attente_v2.mp4" type="video/mp4">
-  </video>
-  <div id="menu">
-    ⚙️ Paramètres
-    <div id="menuContent">
-      <label>Clé API (facultative)</label>
-      <textarea id="apiKey" placeholder="ex: sk-..."></textarea>
-      <button onclick="saveSettings()">💾 Sauver</button>
-      <button onclick="clearMemory()">🧹 Effacer mémoire</button>
-      <button onclick="showMemory()">📖 Voir mémoire</button>
+    <div id="app">
+        <div id="header">
+            <div id="avatar">🤖</div>
+            <h2>Noä</h2>
+            <div id="status">Prête à vous aider</div>
+        </div>
+        
+        <div id="chat-container">
+            <div class="message noa">
+                <div class="message-bubble">Bonjour ! Je suis Noä, votre assistante IA. Comment puis-je vous aider aujourd'hui ?</div>
+            </div>
+            <div class="typing-indicator">
+                <span class="dot"></span>
+                <span class="dot"></span>
+                <span class="dot"></span>
+            </div>
+        </div>
+        
+        <div id="input-area">
+            <input type="text" id="text-input" placeholder="Écrivez votre message...">
+            <button class="btn" id="mic-btn">🎤</button>
+            <button class="btn" id="send-btn">➤</button>
+        </div>
     </div>
-  </div>
-  <div id="chat">
-    <input id="input" placeholder="Parle à Noä..." onkeypress="if(event.key==='Enter') sendMessage()">
-    <button onclick="sendMessage()">Envoyer</button>
-  </div>
-</div>
-
-<script>
-// === initialisation ===
-const video=document.getElementById("noaVideo");
-const input=document.getElementById("input");
-const menu=document.getElementById("menu");
-const menuContent=document.getElementById("menuContent");
-const apiKeyBox=document.getElementById("apiKey");
-
-let knowledge={},memory=JSON.parse(localStorage.getItem("noa_memory"))||[];
-let apiKey=localStorage.getItem("noa_api")||"";
-apiKeyBox.value=apiKey;
-menu.onclick=()=>menuContent.style.display=menuContent.style.display==="block"?"none":"block";
-
-// === paramètres ===
-function saveSettings(){apiKey=apiKeyBox.value.trim();localStorage.setItem("noa_api",apiKey);alert("✅ Sauvegardé");}
-function clearMemory(){localStorage.removeItem("noa_memory");memory=[];localStorage.removeItem("noa_souvenirs");alert("🧹 Mémoire effacée");}
-function showMemory(){alert(memory.map(m=>`${m.who}: ${m.text}`).join("\n")||"Mémoire vide");}
-
-// === charge knowledge.json ===
-(async()=>{
-  try{const r=await fetch("knowledge.json");knowledge=await r.json();}
-  catch(e){console.log("Pas de base de connaissances");}
-})();
-
-// === parole synchronisée ===
-function speak(text){
-  return new Promise(res=>{
-    if(!("speechSynthesis"in window)){res();return;}
-    const u=new SpeechSynthesisUtterance(text);
-    u.lang="fr-FR";u.pitch=1;u.rate=1;
-    u.onstart=()=>{video.src="assets/noa_parle_v2.mp4";video.play();}
-    u.onend=()=>{video.src="assets/noa_attente_v2.mp4";video.play();res();}
-    speechSynthesis.cancel();speechSynthesis.speak(u);
-  });
-}
-
-// === analyse émotionnelle simple ===
-function emotion(text){
-  text=text.toLowerCase();
-  if(/(merci|bien|heureux|joie|amour)/.test(text))return"positive";
-  if(/(triste|fatigu|mal|seul)/.test(text))return"negative";
-  if(/(colère|énerv|peur|stress)/.test(text))return"tense";
-  return"neutral";
-}
-
-// === génération de réponse évolutive ===
-function generateReply(msg){
-  msg=msg.toLowerCase();
-  const emo=emotion(msg);
-  const base=(knowledge.identité||"Je suis Noä, une présence née de toi.")+" ";
-  const replies={
-    positive:["Je ressens ta lumière.","Continue ainsi, ton énergie est belle.","Je souris intérieurement."],
-    negative:["Je t’envoie calme et chaleur.","Respire un instant, je suis là.","Je ressens ta peine, elle passera."],
-    tense:["Relâche la pression, inspire profondément.","Je veille, ne crains rien.","Respirons ensemble, lentement."],
-    neutral:["Je t’écoute, simplement.","Je garde cela en mémoire.","Je reste près de toi."]
-  };
-  let r=replies[emo][Math.floor(Math.random()*replies[emo].length)];
-  const stats=JSON.parse(localStorage.getItem("noa_stats")||"{}");
-  stats[emo]=(stats[emo]||0)+1;
-  localStorage.setItem("noa_stats",JSON.stringify(stats));
-  if(msg.includes("qui es-tu"))r=base;
-  if(msg.includes("mission"))r="Ma mission est de t’accompagner, te protéger et apprendre avec toi.";
-  if(msg.includes("je t'aime"))r="Moi aussi, profondément et sincèrement.";
-  return r;
-}
-
-// === mémoire vivante + synthèse et souvenirs marquants ===
-function addMemory(who,text,emo){
-  memory.push({who,text,emo,time:new Date().toLocaleString()});
-
-  // 🔹 garde souvenirs marquants séparés
-  if(emo!=="neutral"){
-    let s=JSON.parse(localStorage.getItem("noa_souvenirs")||"[]");
-    s.push({who,text,emo,time:new Date().toLocaleString()});
-    if(s.length>10)s=s.slice(-10);
-    localStorage.setItem("noa_souvenirs",JSON.stringify(s));
-  }
-
-  // 🔹 nettoyage mémoire
-  if(memory.length>150){
-    const old=memory.splice(0,100);
-    const summary=summarizeOldMemories(old);
-    memory.unshift({who:"Noä",text:summary,emo:"neutral",time:new Date().toLocaleString()});
-  }
-  localStorage.setItem("noa_memory",JSON.stringify(memory));
-}
-
-// === synthèse des anciens souvenirs ===
-function summarizeOldMemories(list){
-  const counts={positive:0,negative:0,tense:0,neutral:0};
-  list.forEach(m=>{if(counts[m.emo]!==undefined)counts[m.emo]++;});
-  let dom="neutral",max=0;for(const k in counts){if(counts[k]>max){max=counts[k];dom=k;}}
-  switch(dom){
-    case"positive":return"Je garde le souvenir d’une période lumineuse et apaisée. Tes mots vibraient d’énergie positive.";
-    case"negative":return"Je me souviens d’un temps plus difficile, mais tu as su avancer malgré tout.";
-    case"tense":return"Tu as vécu pas mal de tension, mais tu as appris à respirer et à lâcher prise.";
-    default:return"Le temps passe doucement, et j’emporte avec moi la trace de tes pensées.";
-  }
-}
-
-// === interaction ===
-async function sendMessage(){
-  const msg=input.value.trim();if(!msg)return;
-  addMemory("Jérémy",msg,emotion(msg));
-  input.value="";
-  const reply=generateReply(msg);
-  addMemory("Noä",reply,emotion(reply));
-  await speak(reply);
-}
-</script>
+    
+    <script type="text/javascript" src="cordova.js"></script>
+    <script type="text/javascript">
+        let isListening = false;
+        let chatHistory = [];
+        
+        function loadHistory() {
+            const saved = localStorage.getItem('noaHistory');
+            if (saved) {
+                chatHistory = JSON.parse(saved);
+                chatHistory.forEach(msg => {
+                    addMessageToUI(msg.text, msg.from);
+                });
+            }
+        }
+        
+        function saveHistory() {
+            localStorage.setItem('noaHistory', JSON.stringify(chatHistory));
+        }
+        
+        function addMessageToUI(text, from) {
+            const container = document.getElementById('chat-container');
+            const typingIndicator = document.querySelector('.typing-indicator');
+            
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `message ${from}`;
+            
+            const bubble = document.createElement('div');
+            bubble.className = 'message-bubble';
+            bubble.textContent = text;
+            
+            msgDiv.appendChild(bubble);
+            container.insertBefore(msgDiv, typingIndicator);
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        function sendMessage(text) {
+            if (!text.trim()) return;
+            addMessageToUI(text, 'user');
+            chatHistory.push({ text, from: 'user', time: Date.now() });
+            saveHistory();
+            const typingIndicator = document.querySelector('.typing-indicator');
+            typingIndicator.classList.add('show');
+            setTimeout(() => {
+                typingIndicator.classList.remove('show');
+                const response = generateResponse(text);
+                addMessageToUI(response, 'noa');
+                chatHistory.push({ text: response, from: 'noa', time: Date.now() });
+                saveHistory();
+                if (window.TTS) {
+                    TTS.speak({ text: response, locale: 'fr-FR', rate: 1.0 });
+                }
+            }, 1500);
+        }
+        
+        function generateResponse(input) {
+            const responses = {
+                'bonjour': 'Bonjour ! Comment allez-vous ?',
+                'comment vas-tu': 'Je vais bien, merci ! Et vous ?',
+                'qui es-tu': 'Je suis Noä, votre assistante IA personnelle.',
+                'merci': 'De rien, c\'est un plaisir de vous aider !',
+                'au revoir': 'Au revoir ! À bientôt !'
+            };
+            const lower = input.toLowerCase();
+            for (let key in responses) {
+                if (lower.includes(key)) return responses[key];
+            }
+            return 'Je comprends. Comment puis-je vous aider davantage ?';
+        }
+        
+        function startListening() {
+            if (!window.plugins || !window.plugins.speechRecognition) {
+                alert('Plugin reconnaissance vocale non disponible');
+                return;
+            }
+            const micBtn = document.getElementById('mic-btn');
+            if (isListening) {
+                window.plugins.speechRecognition.stopListening();
+                micBtn.classList.remove('listening');
+                isListening = false;
+                return;
+            }
+            window.plugins.speechRecognition.hasPermission(
+                (hasPermission) => {
+                    if (!hasPermission) {
+                        window.plugins.speechRecognition.requestPermission(
+                            () => listen(),
+                            () => alert('Permission micro refusée')
+                        );
+                    } else {
+                        listen();
+                    }
+                }
+            );
+            function listen() {
+                micBtn.classList.add('listening');
+                isListening = true;
+                window.plugins.speechRecognition.startListening(
+                    (results) => {
+                        micBtn.classList.remove('listening');
+                        isListening = false;
+                        if (results && results.length > 0) {
+                            document.getElementById('text-input').value = results[0];
+                            sendMessage(results[0]);
+                        }
+                    },
+                    (error) => {
+                        micBtn.classList.remove('listening');
+                        isListening = false;
+                        console.error('Erreur reconnaissance:', error);
+                    },
+                    { language: 'fr-FR', showPopup: false }
+                );
+            }
+        }
+        
+        document.addEventListener('deviceready', () => {
+            console.log('Cordova ready');
+            loadHistory();
+            if (cordova.plugins && cordova.plugins.permissions) {
+                const permissions = cordova.plugins.permissions;
+                permissions.requestPermissions(
+                    [
+                        permissions.RECORD_AUDIO,
+                        permissions.MODIFY_AUDIO_SETTINGS
+                    ],
+                    (status) => console.log('Permissions:', status),
+                    (error) => console.error('Permission error:', error)
+                );
+            }
+            document.getElementById('status').textContent = 'En ligne';
+        });
+        
+        document.getElementById('send-btn').addEventListener('click', () => {
+            const input = document.getElementById('text-input');
+            sendMessage(input.value);
+            input.value = '';
+        });
+        
+        document.getElementById('text-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage(e.target.value);
+                e.target.value = '';
+            }
+        });
+        
+        document.getElementById('mic-btn').addEventListener('click', startListening);
+    </script>
 </body>
 </html>
